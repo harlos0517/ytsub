@@ -10,7 +10,14 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.313",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.2",
     "typescript": "^5.3.3",
     "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   }
 }
