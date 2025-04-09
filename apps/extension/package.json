@@ -1,0 +1,16 @@
+{
+  "name": "ytsub-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.313",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  }
+}
