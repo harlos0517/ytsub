@@ -1,12 +1,51 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { UploadSubtitle } from './UploadSubtitle'
 
-const SUBS = [
-  { label: 'English (Default)', url: chrome.runtime.getURL('subtitle.vtt') },
-  { label: 'Japanese (Test)', url: 'https://example.com/jp-sub.vtt' },
-  { label: 'Custom (From CDN)', url: 'https://example.com/custom.vtt' }
-]
+type SubtitleInfo = {
+  name: string
+  url: string
+}
+
+function getYouTubeVideoID(): string | null {
+  const url = new URL(window.location.href)
+  return url.searchParams.get('v')
+}
 
 export function SubtitlesUI() {
+  const [subs, setSubs] = useState<SubtitleInfo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const videoId = getYouTubeVideoID()
+
+  const loadSubtitles = useCallback(() => {
+    if (!videoId) {
+      setError('No video ID found in URL.')
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    fetch(`http://localhost:3000/api/subtitles?v=${videoId}`)
+      .then(res => {
+        if (!res.ok) throw new Error(`Server responded ${res.status}`)
+        return res.json()
+      })
+      .then((data: SubtitleInfo[]) => {
+        setSubs(data)
+      })
+      .catch(err => {
+        console.error('Failed to fetch subtitles:', err)
+        setError('Could not load subtitles')
+        setSubs([])
+      })
+      .finally(() => setLoading(false))
+  }, [videoId])
+
+  useEffect(() => {
+    loadSubtitles()
+  }, [loadSubtitles])
+
   const handleLoadSubtitle = async (url: string) => {
     const res = await fetch(url)
     const text = await res.text()
@@ -36,19 +75,25 @@ export function SubtitlesUI() {
       fontSize: '14px',
       fontFamily: 'sans-serif',
       boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
+      maxWidth: '220px'
     }}>
       <strong>Subtitles</strong>
       <div style={{ marginTop: '8px' }}>
-        {SUBS.map((s, i) => (
+        {loading && <div>Loading...</div>}
+        {error && <div style={{ color: 'red' }}>{error}</div>}
+        {!loading && subs.length === 0 && <div>No subtitles found.</div>}
+        {!loading && subs.length > 0 && subs.map((s, i) => (
           <div
             key={i}
             onClick={() => handleLoadSubtitle(s.url)}
             style={{ cursor: 'pointer', margin: '6px 0', textDecoration: 'underline' }}
           >
-            {s.label}
+            {s.name}
           </div>
         ))}
       </div>
+
+      <UploadSubtitle onUploadSuccess={loadSubtitles} />
     </div>
   )
 }
