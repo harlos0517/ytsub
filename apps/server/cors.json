@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["https://www.youtube.com"],
+    "method": ["GET", "OPTION"],
+    "maxAgeSeconds": 3600
+  }
+]

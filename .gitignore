@@ -6,3 +6,6 @@ serviceAccountKey.json
 .env.production
 apps/server/prisma/client
 apps/server/prisma/migrations
+*.vtt
+*.srt
+*.zip

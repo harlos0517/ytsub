@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsc --noEmit & tsx watch src/index.ts",
-    "start": "tsc --noEmit & tsx src/index.ts"
+    "start": "tsc --noEmit & tsx src/index.ts",
+    "prod": "prisma migrate deploy && tsx src/index.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.6.0",

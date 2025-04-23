@@ -29,8 +29,7 @@ const getYouTubeVideoID = (): string | null => {
 }
 
 export const SubtitlesUI = () => {
-  const videoId = getYouTubeVideoID()
-
+  const [videoId, setVideoId] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [subs, setSubs] = useState<SubtitleInfo[]>([])
   const [currentSubtitle, setCurrentSubtitle] = useState<SubtitleInfo | null>(null)
@@ -68,12 +67,10 @@ export const SubtitlesUI = () => {
       if (user) setUser(user)
     })
 
-    // This is mount on the video, so no need to check for videoId change anymore
-    // const interval = setInterval(() => {
-    //   const currentVideoId = getYouTubeVideoID()
-    //   if (currentVideoId !== videoId) setVideoId(currentVideoId)
-    // }, 500)
-    // return () => clearInterval(interval)
+    const interval = setInterval(() => {
+      const currentVideoId = getYouTubeVideoID()
+      if (currentVideoId !== videoId) setVideoId(currentVideoId)
+    }, 500)
 
     const stopPropagation = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement
@@ -81,7 +78,10 @@ export const SubtitlesUI = () => {
     }
     window.addEventListener('keydown', stopPropagation, true)
 
-    return () => window.removeEventListener('keydown', stopPropagation, true)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('keydown', stopPropagation, true)
+    }
   }, [])
 
   const handleLogin = async() => {
