@@ -1,26 +1,37 @@
-import React, { useEffect, useState } from 'react'
+import { Button, FileInput, TextInput } from '@mantine/core'
+import React, { useState } from 'react'
+
+const apiUrl = import.meta.env.VITE_API_URL
 
 type Props = {
+  videoId: string
   onUploadSuccess: () => void
+  handleLogin: () => Promise<string | null>
 }
 
-function getYouTubeVideoID(): string | null {
-  const url = new URL(window.location.href)
-  return url.searchParams.get('v')
-}
-
-export function UploadSubtitle({ onUploadSuccess }: Props) {
+export const UploadSubtitle = ({ videoId, onUploadSuccess, handleLogin }: Props) => {
   const [file, setFile] = useState<File | null>(null)
-  const [videoId, setVideoId] = useState('')
   const [name, setName] = useState('')
   const [status, setStatus] = useState<string | null>(null)
 
-  useEffect(() => {
-    const id = getYouTubeVideoID()
-    if (id) setVideoId(id)
-  }, [])
+  const verifyToken = async() => {
+    const { user } = await chrome.storage.local.get('user')
+    const idToken = user?.idToken as string
+    if (idToken) {
+      const res = await fetch(`${apiUrl}/auth/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      })
+      if (res.ok) return idToken
+      else return await handleLogin()
+    } else return await handleLogin()
+  }
 
-  const handleUpload = async () => {
+  const handleUpload = async() => {
+    const token = await verifyToken()
+    if (!token) return
+
     if (!file || !videoId || !name) {
       setStatus('All fields are required.')
       return
@@ -30,9 +41,10 @@ export function UploadSubtitle({ onUploadSuccess }: Props) {
     formData.append('file', file)
     formData.append('videoId', videoId)
     formData.append('name', name)
+    formData.append('idToken', token)
 
     try {
-      const res = await fetch('http://localhost:3000/api/upload', {
+      const res = await fetch(`${apiUrl}/api/upload`, {
         method: 'POST',
         body: formData
       })
@@ -42,7 +54,7 @@ export function UploadSubtitle({ onUploadSuccess }: Props) {
         setStatus(`✅ Uploaded: ${data.name}`)
         setName('')
         setFile(null)
-        onUploadSuccess() // 🚀 Trigger refresh
+        onUploadSuccess()
       } else {
         setStatus(`❌ Upload failed: ${data.error || res.statusText}`)
       }
@@ -53,25 +65,20 @@ export function UploadSubtitle({ onUploadSuccess }: Props) {
   }
 
   return (
-    <div style={{ marginTop: '20px', borderTop: '1px solid #555', paddingTop: '10px' }}>
-      <strong>Upload a Subtitle</strong>
-      <div style={{ margin: '8px 0' }}>
-        <input
-          type="text"
-          value={name}
-          placeholder="Subtitle Name"
-          onChange={e => setName(e.target.value)}
-        />
-      </div>
-      <div style={{ margin: '8px 0' }}>
-        <input
-          type="file"
-          accept=".vtt"
-          onChange={e => setFile(e.target.files?.[0] || null)}
-        />
-      </div>
-      <button onClick={handleUpload}>Upload</button>
+    <>
+      <TextInput
+        placeholder="Subtitle name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <FileInput
+        placeholder="Upload .vtt or .srt"
+        accept=".vtt, .srt"
+        value={file}
+        onChange={setFile}
+      />
+      <Button onClick={handleUpload}>Upload</Button>
       {status && <p style={{ fontSize: '13px', marginTop: '6px' }}>{status}</p>}
-    </div>
+    </>
   )
 }

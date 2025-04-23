@@ -8,10 +8,12 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        content: 'src/content.tsx'
+        content: 'src/content.tsx',
+        background: 'src/background.ts',
       },
       output: {
-        entryFileNames: '[name].js'
+        entryFileNames: '[name].js',
+        assetFileNames: '[name].[ext]',
       }
     }
   }

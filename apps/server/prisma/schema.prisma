@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output = "./client"
+  output   = "./client"
 }
 
 datasource db {
@@ -15,9 +15,21 @@ datasource db {
 }
 
 model Subtitle {
-  id          String   @id @default(cuid())
+  id          Int      @id @default(autoincrement())
   videoId     String
   name        String
   storagePath String
+  uploaderId  Int
+  uploader    User?    @relation(fields: [uploaderId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  googleId  String     @unique
+  email     String     @unique
+  name      String?
+  avatar    String?
+  subtitles Subtitle[]
+  createdAt DateTime   @default(now())
 }

@@ -2,15 +2,25 @@
   "manifest_version": 3,
   "name": "YouTube Subtitle Injector",
   "version": "0.1",
-  "description": "Injects subtitles into YouTube videos.",
-  "permissions": ["scripting", "activeTab"],
+  "permissions": ["identity", "storage", "scripting"],
   "host_permissions": ["https://www.youtube.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/watch*"],
-      "js": ["content.js"]
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
     }
   ],
+  "oauth2": {
+    "client_id": "660529147192-u6o8u5sfh7k1defm2rnq1gio5jhsrjm5.apps.googleusercontent.com",
+    "scopes": ["profile", "email", "openid"]
+  },
+  "action": {
+    "default_title": "YouTube Subtitle Injector"
+  },
   "web_accessible_resources": [
     {
       "resources": ["subtitle.vtt"],

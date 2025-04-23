@@ -3,5 +3,6 @@ node_modules
 *firebase-adminsdk*.json
 serviceAccountKey.json
 .env
+.env.production
 apps/server/prisma/client
 apps/server/prisma/migrations
